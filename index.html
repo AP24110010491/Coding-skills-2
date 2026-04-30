@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Planner — Knapsack Optimizer</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Background orbs -->
+  <div class="bg-orb orb1"></div>
+  <div class="bg-orb orb2"></div>
+  <div class="bg-orb orb3"></div>
+
+  <div class="app-shell">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-icon">⬡</span>
+        <div>
+          <div class="logo-title">StudyDP</div>
+          <div class="logo-sub">Knapsack Optimizer</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="nav-item active" data-tab="planner" onclick="switchTab('planner')">
+          <span class="nav-icon">◈</span> Planner
+        </a>
+        <a class="nav-item" data-tab="schedule" onclick="switchTab('schedule')">
+          <span class="nav-icon">◉</span> Schedule
+        </a>
+        <a class="nav-item" data-tab="about" onclick="switchTab('about')">
+          <span class="nav-icon">◎</span> How it works
+        </a>
+      </nav>
+
+      <!-- Time budget card -->
+      <div class="time-card">
+        <div class="time-card-label">Today's budget</div>
+        <div class="time-display">
+          <span class="time-val" id="sidebarHours">6.0</span>
+          <span class="time-unit">hrs</span>
+        </div>
+        <input type="range" class="hour-slider" id="hourSlider" min="1" max="12" step="0.5" value="6" oninput="onHoursChange(this.value)" />
+        <div class="slider-labels"><span>1h</span><span>12h</span></div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="btn-generate" onclick="generateSchedule()">
+          Generate Schedule <span class="btn-arrow">→</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main class="main">
+
+      <!-- ═══ TAB: PLANNER ═══ -->
+      <section id="tab-planner" class="tab-content active">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Subject Planner</h1>
+            <p class="page-sub">Add your subjects, set priorities and difficulty</p>
+          </div>
+          <button class="btn-add" onclick="openAddModal()">+ Add Subject</button>
+        </div>
+
+        <!-- Stats row -->
+        <div class="stats-row" id="statsRow">
+          <div class="stat-chip">
+            <div class="stat-num" id="statTotal">5</div>
+            <div class="stat-lbl">Subjects</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-num" id="statHoursNeeded">7.5</div>
+            <div class="stat-lbl">Hours needed</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-num" id="statAvail">6.0</div>
+            <div class="stat-lbl">Hours available</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-num" id="statFit" style="color:var(--accent-warm)">—</div>
+            <div class="stat-lbl">After DP</div>
+          </div>
+        </div>
+
+        <!-- Subject cards -->
+        <div class="subjects-grid" id="subjectsGrid"></div>
+      </section>
+
+      <!-- ═══ TAB: SCHEDULE ═══ -->
+      <section id="tab-schedule" class="tab-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Optimal Schedule</h1>
+            <p class="page-sub">0/1 Knapsack DP — maximized benefit within your time</p>
+          </div>
+          <button class="btn-add" onclick="generateSchedule()">↻ Recalculate</button>
+        </div>
+        <div id="scheduleContent">
+          <div class="empty-state">
+            <div class="empty-icon">◈</div>
+            <p>Click <strong>Generate Schedule</strong> in the sidebar to compute your optimal plan.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ TAB: ABOUT ═══ -->
+      <section id="tab-about" class="tab-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">How It Works</h1>
+            <p class="page-sub">The algorithm powering your schedule</p>
+          </div>
+        </div>
+        <div class="about-grid">
+          <div class="about-card">
+            <div class="about-num">01</div>
+            <h3>Knapsack Problem</h3>
+            <p>Given a set of subjects (items) each requiring a certain number of hours (weight) and offering a study benefit (value), find the optimal subset that fits within your available time (capacity).</p>
+          </div>
+          <div class="about-card">
+            <div class="about-num">02</div>
+            <h3>Benefit Formula</h3>
+            <p>Each subject gets a <em>benefit score</em> computed as:<br><code>(priority × 30) + (difficulty × 15)</code><br>High priority + hard subjects are worth studying most.</p>
+          </div>
+          <div class="about-card">
+            <div class="about-num">03</div>
+            <h3>DP Table</h3>
+            <p>A 2D table <code>dp[i][w]</code> stores the max benefit using first <code>i</code> subjects within <code>w</code> half-hours. Each cell: <code>max(skip, take)</code>.</p>
+          </div>
+          <div class="about-card">
+            <div class="about-num">04</div>
+            <h3>Backtracking</h3>
+            <p>After filling the table, we trace backwards from <code>dp[n][W]</code> to find exactly which subjects were selected — giving you the optimal set.</p>
+          </div>
+          <div class="about-card">
+            <div class="about-num">05</div>
+            <h3>Complexity</h3>
+            <p>Time: <code>O(n × W)</code> where W = total half-hours.<br>Space: <code>O(n × W)</code> for the DP table.<br>Practical and fast even for 20+ subjects.</p>
+          </div>
+          <div class="about-card">
+            <div class="about-num">06</div>
+            <h3>Why 0/1?</h3>
+            <p>Each subject is either fully studied or skipped — you can't study half a subject. This "all or nothing" constraint is exactly the 0/1 variant of the knapsack problem.</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ── ADD SUBJECT MODAL ── -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Add Subject</h2>
+        <button class="modal-close" onclick="closeAddModal()">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Subject Name</label>
+        <input class="form-input" id="inputName" type="text" placeholder="e.g. Data Structures" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Hours Needed: <span id="hoursDisplay">2.0</span></label>
+        <input class="form-range" id="inputHours" type="range" min="0.5" max="8" step="0.5" value="2"
+               oninput="document.getElementById('hoursDisplay').textContent=parseFloat(this.value).toFixed(1)" />
+        <div class="range-labels"><span>0.5h</span><span>8h</span></div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Priority</label>
+          <div class="seg-control" id="segPriority">
+            <button class="seg-btn" data-val="1" onclick="selectSeg('segPriority',1)">Low</button>
+            <button class="seg-btn active" data-val="2" onclick="selectSeg('segPriority',2)">Medium</button>
+            <button class="seg-btn" data-val="3" onclick="selectSeg('segPriority',3)">High</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Difficulty</label>
+          <div class="seg-control" id="segDifficulty">
+            <button class="seg-btn" data-val="1" onclick="selectSeg('segDifficulty',1)">Easy</button>
+            <button class="seg-btn active" data-val="2" onclick="selectSeg('segDifficulty',2)">Medium</button>
+            <button class="seg-btn" data-val="3" onclick="selectSeg('segDifficulty',3)">Hard</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deadline -->
+      <div class="form-group">
+        <label class="form-label">Exam / Deadline (optional)</label>
+        <input class="form-input" id="inputDeadline" type="date" />
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeAddModal()">Cancel</button>
+        <button class="btn-confirm" onclick="confirmAddSubject()">Add Subject</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
